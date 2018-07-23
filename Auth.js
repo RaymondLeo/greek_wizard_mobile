@@ -1,73 +1,76 @@
-import React, { Component } from 'react';
+import React, {Component} from 'react';
 import {
-  Text,
-  TouchableOpacity,
-  ScrollView,
-  View,
-  StyleSheet,
-  Alert,
+    Text,
+    TouchableOpacity,
+    ScrollView,
+    View,
+    StyleSheet,
+    Alert,
 } from 'react-native';
-import Expo, { Constants } from 'expo';
+import Expo, {Constants} from 'expo';
 
 export class Auth extends Component {
-  state = {
-    responseJSON: null,
-  };
-  callGraph = async token => {
-    /// Look at the fields... I don't have an `about` on my profile but everything else should get returned.
+    renderValue = value => (
+        <Text key={value} style={styles.paragraph}>{value}</Text>
+    );
+}
+
+callGraph = async token => {
     const response = await fetch(
-      `https://graph.facebook.com/me?access_token=${token}&fields=id,name,email,about,picture`
+        `https://graph.facebook.com/me?access_token=${token}&fields=id,name,email,about,picture`
     );
     const responseJSON = await response.json();
-    this.setState({ responseJSON });
-  };
+    return responseJSON;
+};
 
-  login = async () => {
+login = async (props) => {
     const {
-      type,
-      token,
+        type,
+        token,
     } = await Expo.Facebook.logInWithReadPermissionsAsync('1765042437100435', {
-      permissions: ['public_profile', 'email', 'user_friends'],
+        permissions: ['public_profile', 'email', 'user_friends'],
     });
 
     if (type === 'success') {
-      this.callGraph(token);
+        const response = await fetch(
+            `https://graph.facebook.com/me?access_token=${token}&fields=id,name,email,about,picture`
+        );
 
-      const isLoggedIn = true;
-      this.setState({ isLoggedIn });
-      // Alert.alert(
-      //
-      //   `Hi ${this.state.responseJSON}`);
-      //this.firebaseLogin(token);
+        const responseJSON = await response.json();
+
+        props.navigator.navigate('Home', {
+            name: responseJSON.name,
+            email: responseJSON.email
+        });
     }
-  };
+};
 
-  // Sign in with credential from the Facebook user.
-  firebaseLogin = token => {
-    // firebase.auth().signInWithCredential(token).catch((error) => {
-    //     // Handle Errors here.
-    //     console.warn("Add Error for login", error)
-    //   });
-  };
+// passToken = async token => {
+//     const JSONResponse = this.callGraph(token);
+//     Alert.alert(JSONResponse.email);
+// }
 
-  renderButton = buttonText => (
-    <TouchableOpacity onPress={() => this.login()}>
-      <View
-        style={{
-          width: '50%',
-          alignSelf: 'center',
-          borderRadius: 4,
-          padding: 24,
-          backgroundColor: '#3B5998',
-        }}>
-        <Text style={{ color: 'white', fontWeight: 'bold' }}>
-          {buttonText}
-        </Text>
-      </View>
+export const LoginSuccess = (props) => (
+    <AuthContext.Consumer>
+        {(context) =>
+            context.changeLogInState()
+        }
+    </AuthContext.Consumer>
+)
+
+export const RenderButton = (props) => (
+    <TouchableOpacity onPress={() => this.login(props)}>
+        <View
+            style={{
+                width: '30%',
+                alignSelf: 'center',
+                borderRadius: 3,
+                padding: 12,
+                backgroundColor: '#3B5998',
+            }}>
+            <Text style={{color: 'white', fontWeight: 'bold', textAlign: 'center'}}>
+                {props.buttonText}
+            </Text>
+        </View>
     </TouchableOpacity>
-  );
-
-  renderValue = value => (
-    <Text key={value} style={styles.paragraph}>{value}</Text>
-  );
-}
+);

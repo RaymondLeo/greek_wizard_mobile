@@ -63,6 +63,7 @@ export const RenderButton = (props) => (
         <View
             style={{
                 width: '30%',
+                height: 40,
                 alignSelf: 'center',
                 borderRadius: 3,
                 padding: 12,
